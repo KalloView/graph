@@ -1,0 +1,40 @@
+type ReviewCommented @entity(immutable: true) {
+  id: Bytes!
+  locationId: Bytes! # bytes32
+  reviewId: Bytes! # bytes32
+  commentId: Bytes! # bytes32
+  author: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ReviewDownvoted @entity(immutable: true) {
+  id: Bytes!
+  locationId: Bytes! # bytes32
+  reviewId: Bytes! # bytes32
+  voter: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ReviewPosted @entity(immutable: true) {
+  id: Bytes!
+  locationId: Bytes! # bytes32
+  reviewId: Bytes! # bytes32
+  author: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ReviewUpvoted @entity(immutable: true) {
+  id: Bytes!
+  locationId: Bytes! # bytes32
+  reviewId: Bytes! # bytes32
+  voter: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}

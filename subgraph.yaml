@@ -1,0 +1,32 @@
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: KalloViewRegistry
+    network: goerli
+    source:
+      address: "0xC081DAf949aBb52b8a24db61B0E75e8bB44e8AF5"
+      abi: KalloViewRegistry
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - ReviewCommented
+        - ReviewDownvoted
+        - ReviewPosted
+        - ReviewUpvoted
+      abis:
+        - name: KalloViewRegistry
+          file: ./abis/KalloViewRegistry.json
+      eventHandlers:
+        - event: ReviewCommented(bytes32,bytes32,bytes32,address)
+          handler: handleReviewCommented
+        - event: ReviewDownvoted(bytes32,bytes32,address)
+          handler: handleReviewDownvoted
+        - event: ReviewPosted(bytes32,bytes32,address)
+          handler: handleReviewPosted
+        - event: ReviewUpvoted(bytes32,bytes32,address)
+          handler: handleReviewUpvoted
+      file: ./src/kallo-view-registry.ts
