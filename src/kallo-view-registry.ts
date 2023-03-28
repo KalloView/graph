@@ -1,3 +1,4 @@
+import { BigInt } from "@graphprotocol/graph-ts";
 import {
   ReviewCommented as ReviewCommentedEvent,
   ReviewDownvoted as ReviewDownvotedEvent,
@@ -5,69 +6,74 @@ import {
   ReviewUpvoted as ReviewUpvotedEvent
 } from "../generated/KalloViewRegistry/KalloViewRegistry"
 import {
-  ReviewCommented,
-  ReviewDownvoted,
-  ReviewPosted,
-  ReviewUpvoted
+  Location,
+  Review,
+  Comment
 } from "../generated/schema"
 
 export function handleReviewCommented(event: ReviewCommentedEvent): void {
-  let entity = new ReviewCommented(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.locationId = event.params.locationId
-  entity.reviewId = event.params.reviewId
-  entity.commentId = event.params.commentId
-  entity.author = event.params.author
+  let location = Location.load(event.params.locationId)
+  
+  // No location, do nothing
+  if (!location) return;
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  let comment = new Comment(event.transaction.hash.concatI32(event.logIndex.toI32()))
 
-  entity.save()
+  comment.review = location.id
+  comment.url = event.params.commentId.toString()
+  comment.blockNumber = event.block.number
+  comment.blockTimestamp = event.block.timestamp
+  comment.transactionHash = event.transaction.hash
+
+  comment.save()
 }
 
 export function handleReviewDownvoted(event: ReviewDownvotedEvent): void {
-  let entity = new ReviewDownvoted(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.locationId = event.params.locationId
-  entity.reviewId = event.params.reviewId
-  entity.voter = event.params.voter
+  let review = Review.load(event.params.reviewId)
+  if (!review) {
+    return
+  }
+  
+  review.downvotes = review.downvotes + 1
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
+  review.save()
 }
 
 export function handleReviewPosted(event: ReviewPostedEvent): void {
-  let entity = new ReviewPosted(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.locationId = event.params.locationId
-  entity.reviewId = event.params.reviewId
-  entity.author = event.params.author
+  let location = Location.load(event.params.locationId)
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  if (!location) {
+    location = new Location(event.params.locationId)
+    location.reviews = []
+  }
 
-  entity.save()
+  // Create review Entity
+  let review = new Review(event.params.reviewId)
+  review.url = event.params.reviewId.toString()
+  review.location = location.id
+  review.blockNumber = event.block.number
+  review.blockTimestamp = event.block.timestamp
+  review.transactionHash = event.transaction.hash
+  review.author = event.params.author
+  review.comments = []
+  review.upvotes = 0
+  review.downvotes = 0
+  
+  // Save
+  review.save()
+
+  // Save location
+  location.reviews.push(review.id)
+  location.save()
 }
 
 export function handleReviewUpvoted(event: ReviewUpvotedEvent): void {
-  let entity = new ReviewUpvoted(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.locationId = event.params.locationId
-  entity.reviewId = event.params.reviewId
-  entity.voter = event.params.voter
+  let review = Review.load(event.params.reviewId)
+  if (!review) {
+    return
+  }
 
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
+  review.upvotes = review.upvotes + 1
 
-  entity.save()
+  review.save()
 }
